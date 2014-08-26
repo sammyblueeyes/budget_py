@@ -1,24 +1,29 @@
 import unittest 
 
 
+class Cashflow:
 
-#TODO improve the structure
-def load_csv(filename):
-    """Load data csv file from filename. Return pointer to data object."""
-    infile = open(filename, "r")
-    data = []
-    for line in infile:
-        data.append(line.rstrip().split(","))
-    infile.close()
-    return data
+    def __init__(self, start_position=0.0, number_of_days=0):
+        pass
+
+    def calculate(self, start_position, number_of_days):
+        return [start_position]
 
 
-def load_expenses(filename):
-    return load_csv(filename)
-   
+    def load_csv(self, filename):
+        """Load data csv file from filename. Return pointer to data object."""
+        infile = open(filename, "r")
+        data = []
+        for line in infile:
+            data.append(line.rstrip().split(","))
+        infile.close()
+        return data
 
-def load_income(filename):
-    return load_csv(filename)
+    def load_expenses(self, filename):
+        return self.load_csv(filename)
+       
+    def load_income(self, filename):
+        return self.load_csv(filename)
 
 
 
@@ -46,19 +51,23 @@ class BudgetTest(unittest.TestCase):
         ofile.close()
 
 
-    def test_load_expenses(self):
-        """docstring for test_load_expenses"""
-        expenses = load_expenses("expenses.csv")
+    def test_load_expenses_csv_file(self):
+        expenses = Cashflow().load_expenses("expenses.csv")
         self.assertIsNotNone(expenses)
         self.assertEqual(10, len(expenses))
 
-
-    def test_load_income(self):
-        """docstring for test_load_income"""
-        income = load_income("income.csv")
+    def test_load_income_csv_file(self):
+        income = Cashflow().load_income("income.csv")
         self.assertIsNotNone(income)
         self.assertEqual(2, len(income))
 
+    def test_range_contains_no_income_or_expenses(self):
+        start_position = 1000.0
+        num_days = 1
+        cashflow = Cashflow().calculate(start_position, num_days)
+        self.assertEqual(len(cashflow), num_days)
+        for day in cashflow:
+            self.assertEqual(day, start_position)
 
 
 
