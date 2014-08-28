@@ -1,13 +1,16 @@
 import unittest 
 
+# TODO Add a method to tally up income and expenses for each day of the specified period
+# TODO Add an input for user arguments (income file, expenses file, number of days to graph)
 
 class Cashflow:
 
     def __init__(self, start_position=0.0, number_of_days=0):
-        pass
+        self.start_position = start_position
+        self.number_of_days = number_of_days
 
-    def calculate(self, start_position, number_of_days):
-        return [start_position]
+    def calculate(self, start_position, number_of_days, start_date=None, income=None, expenses=None):
+        return [start_position for x in range(number_of_days)]
 
 
     def load_csv(self, filename):
@@ -61,15 +64,16 @@ class BudgetTest(unittest.TestCase):
         self.assertIsNotNone(income)
         self.assertEqual(2, len(income))
 
-    def test_range_contains_no_income_or_expenses(self):
+    def test_range_with_no_income_or_expenses(self):
         start_position = 1000.0
-        num_days = 1
-        cashflow = Cashflow().calculate(start_position, num_days)
-        self.assertEqual(len(cashflow), num_days)
-        for day in cashflow:
-            self.assertEqual(day, start_position)
+        for num_days in range(0, 21):
+            cashflow = Cashflow().calculate(start_position, num_days)
+            self.assertEqual(len(cashflow), num_days)
+            for day in cashflow:
+                self.assertEqual(day, start_position)
 
 
 
 if __name__ == '__main__':
     unittest.main()
+
