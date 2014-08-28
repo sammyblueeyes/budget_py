@@ -1,5 +1,9 @@
 import unittest 
 
+from datetime import datetime, date, timedelta
+from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY, MINUTELY, SECONDLY
+
+
 # TODO Add a method to tally up income and expenses for each day of the specified period
 # TODO Add an input for user arguments (income file, expenses file, number of days to graph)
 
@@ -11,7 +15,10 @@ class Cashflow:
 
     def calculate(self, start_position, number_of_days, start_date=None, income=None, expenses=None):
         return [start_position for x in range(number_of_days)]
-
+    
+    def get_due_dates(self, start_date, end_date, due_date, period):
+        r = rrule(period, dtstart=due_date)
+        return r.between(start_date, end_date, inc=True)
 
     def load_csv(self, filename):
         """Load data csv file from filename. Return pointer to data object."""
@@ -72,6 +79,20 @@ class BudgetTest(unittest.TestCase):
             for day in cashflow:
                 self.assertEqual(day, start_position)
 
+    def test_gen_weekly_due_date_with_1_day_range(self):
+        period = WEEKLY
+        d = date.today()
+        start_date = datetime(d.year, d.month, d.day)
+        end_date = start_date
+        for i in range(21):
+            due_date = start_date - timedelta(i)
+            due_dates = Cashflow().get_due_dates(start_date, end_date, due_date, period)
+            #print "     %d) " % i + str(due_dates)
+            if (i % 7) == 0:
+                self.assertEqual(len(due_dates), 1)
+                self.assertEqual(due_dates[0], start_date)
+            else:
+                self.assertEqual(len(due_dates), 0)
 
 
 if __name__ == '__main__':
