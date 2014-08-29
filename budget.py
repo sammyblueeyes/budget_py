@@ -84,11 +84,13 @@ class BudgetTest(unittest.TestCase):
         d = date.today()
         start_date = datetime(d.year, d.month, d.day)
         end_date = start_date
-        for i in range(21):
-            due_date = start_date - timedelta(i)
+        for i in range(-21, 20):
+            due_date = start_date + timedelta(i)
             due_dates = Cashflow().get_due_dates(start_date, end_date, due_date, period)
             #print "     %d) " % i + str(due_dates)
-            if (i % 7) == 0:
+            if i > 0:
+                self.assertEqual(len(due_dates), 0)
+            elif (i % 7) == 0:
                 self.assertEqual(len(due_dates), 1)
                 self.assertEqual(due_dates[0], start_date)
             else:
