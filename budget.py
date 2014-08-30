@@ -9,12 +9,16 @@ from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY, MINUTE
 
 class Cashflow:
 
-    def __init__(self, start_position=0.0, number_of_days=1):
-        # TODO: zero number of days is invalid
+    def __init__(self, start_position=0.0, number_of_days=1, start_date=None):
+        # TODO: number_of_days must be > 0
+        # TODO: Ensure start_date is at the beginning of the day
         self.start_position = start_position
         self.number_of_days = number_of_days
         d = date.today()
-        self.start_date = datetime(d.year, d.month, d.day)
+        if start_date is None:
+            self.start_date = datetime(d.year, d.month, d.day)
+        else:
+            self.start_date = start_date
         self.end_date = self.start_date + timedelta(number_of_days-1)
 
     def calculate(self, start_position, number_of_days, start_date=None, income=None, expenses=None):
