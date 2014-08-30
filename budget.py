@@ -98,6 +98,11 @@ class BudgetTest(unittest.TestCase):
             for day in cashflow:
                 self.assertEqual(day, start_position)
 
+
+    def assert_single_due_date(self, due_dates, start_date):
+        self.assertEqual(len(due_dates), 1)
+        self.assertEqual(due_dates[0], start_date)
+
     def test_gen_weekly_due_date_with_1_day_range(self):
         for i in range(-1000, 20):
             c = Cashflow()
@@ -108,8 +113,7 @@ class BudgetTest(unittest.TestCase):
             if i > 0:
                 self.assertEqual(len(due_dates), 0)
             elif (i % 7) == 0:
-                self.assertEqual(len(due_dates), 1)
-                self.assertEqual(due_dates[0], c.start_date)
+                self.assert_single_due_date(due_dates, c.start_date)
             else:
                 self.assertEqual(len(due_dates), 0)
             #print "     %d) " % i + str(due_dates)
@@ -117,8 +121,7 @@ class BudgetTest(unittest.TestCase):
     def test_gen_monthly_due_date_with_1_day_range_at_end_of_feb(self):
         def check_date(due_date):
             due_dates = c.get_due_dates(due_date, MONTHLY)
-            self.assertEqual(len(due_dates), 1)
-            self.assertEqual(due_dates[0], start_date)
+            self.assert_single_due_date(due_dates, c.start_date)
 
         # Due date on last day of February
         end_of_feb = datetime(2014, 2, 28)
@@ -152,35 +155,30 @@ class BudgetTest(unittest.TestCase):
             c = Cashflow(start_date=datetime(2014, i+1, last_days[i]))
             due_dates = c.get_due_dates(datetime(2012,12,30), MONTHLY)
             if last_days[i] <= 30:
-                self.assertEqual(len(due_dates), 1)
-                self.assertEqual(due_dates[0], c.start_date)
+                self.assert_single_due_date(due_dates, c.start_date)
             else:
                 self.assertEqual(len(due_dates), 0)
             due_dates = c.get_due_dates(datetime(2012,12,31), MONTHLY)
-            self.assertEqual(len(due_dates), 1)
-            self.assertEqual(due_dates[0], c.start_date)
+            self.assert_single_due_date(due_dates, c.start_date)
 
     def test_gen_monthly_due_date_with_1_day_range_at_start_of_month(self):
         # check first of month 
         c = Cashflow(start_date=datetime(2014, 1, 1))
         due_dates = c.get_due_dates(datetime(2012,12,1), MONTHLY)
-        self.assertEqual(len(due_dates), 1)
-        self.assertEqual(due_dates[0], c.start_date)
+        self.assert_single_due_date(due_dates, c.start_date)
 
 
     def test_gen_monthly_due_date_with_1_day_range_within_the_month(self):
         # Check other day within the month 
         c = Cashflow(start_date=datetime(2014, 1, 17))
         due_dates = c.get_due_dates(datetime(2012,06,17), MONTHLY)
-        self.assertEqual(len(due_dates), 1)
-        self.assertEqual(due_dates[0], c.start_date)
+        self.assert_single_due_date(due_dates, c.start_date)
 
     def test_gen_yearly_due_date_with_1_day_range_for_leap_year(self):
         # Test YEARLY with 29 Feb in leap year as the due date
         c = Cashflow(start_date=datetime(2014, 2, 28))
         due_dates = c.get_due_dates(datetime(2012,02,29), YEARLY)
-        self.assertEqual(len(due_dates), 1)
-        self.assertEqual(due_dates[0], c.start_date)
+        self.assert_single_due_date(due_dates, c.start_date)
 
         c = Cashflow(start_date=datetime(2016, 2, 28))
         due_dates = c.get_due_dates(datetime(2012,02,29), YEARLY)
@@ -188,23 +186,20 @@ class BudgetTest(unittest.TestCase):
 
         c = Cashflow(start_date=datetime(2016, 2, 29))
         due_dates = c.get_due_dates(datetime(2012,02,29), YEARLY)
-        self.assertEqual(len(due_dates), 1)
-        self.assertEqual(due_dates[0], c.start_date)
+        self.assert_single_due_date(due_dates, c.start_date)
 
     def test_gen_yearly_due_date_with_1_day_range_for_non_leap_years(self):
         for i in range(365):
             c = Cashflow(start_date=datetime(2014, 1, 1))
             due_date = c.start_date + timedelta(i)
             due_dates = c.get_due_dates(datetime(2013,c.start_date.month,c.start_date.day), YEARLY)
-            self.assertEqual(len(due_dates), 1)
-            self.assertEqual(due_dates[0], c.start_date)
+            self.assert_single_due_date(due_dates, c.start_date)
 
     def test_gen_quarterly_due_date_with_1_day_range(self):
         for i in range(12):
             c = Cashflow(start_date=datetime(2014, ((i+3) % 12)+1, 15))
             due_dates = c.get_due_dates(datetime(2013,i+1,15), QUARTERLY)
-            self.assertEqual(len(due_dates), 1)
-            self.assertEqual(due_dates[0], c.start_date)
+            self.assert_single_due_date(due_dates, c.start_date)
 
     # TODO
     def test_gen_quarterly_due_date_with_1_day_range_for_feb(self):
