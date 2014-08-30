@@ -160,7 +160,13 @@ class BudgetTest(unittest.TestCase):
         self.assertEqual(due_dates[0], c.start_date)
 
 
-    # TODO check other date of month 
+    def test_gen_monthly_due_date_with_1_day_range_within_the_month(self):
+        # Check other day within the month 
+        c = Cashflow(start_date=datetime(2014, 1, 17))
+        due_dates = c.get_due_dates(datetime(2012,06,17), MONTHLY)
+        self.assertEqual(len(due_dates), 1)
+        self.assertEqual(due_dates[0], c.start_date)
+
     # TODO test YEARLY with 29 Feb in leap year as the due date
 
 
