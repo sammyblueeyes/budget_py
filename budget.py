@@ -137,11 +137,23 @@ class BudgetTest(unittest.TestCase):
         check_date(datetime(2012, 1, 30))
         check_date(datetime(2012, 1, 31))
 
+    def test_gen_monthly_due_date_with_1_day_range_at_end_of_month(self):
+        # Check behaviour when due date is 30/31 of the month
+        last_days = [31,28,31,30,31,30,31,31,30,31,30,31]
+        for i in range(len(last_days)):
+            c = Cashflow(start_date=datetime(2014, i+1, last_days[i]))
+            due_dates = c.get_due_dates(datetime(2012,12,30), MONTHLY)
+            if last_days[i] <= 30:
+                self.assertEqual(len(due_dates), 1)
+                self.assertEqual(due_dates[0], c.start_date)
+            else:
+                self.assertEqual(len(due_dates), 0)
+            due_dates = c.get_due_dates(datetime(2012,12,31), MONTHLY)
+            self.assertEqual(len(due_dates), 1)
+            self.assertEqual(due_dates[0], c.start_date)
 
-    # TODO check behaviour of 30/31 end of month
     # TODO check first of month 
     # TODO check other date of month 
-
 
 
 
