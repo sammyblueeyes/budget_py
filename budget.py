@@ -200,10 +200,16 @@ class BudgetTest(unittest.TestCase):
             c = Cashflow(start_date=datetime(2014, ((i+3) % 12)+1, 15))
             due_dates = c.get_due_dates(datetime(2013,i+1,15), QUARTERLY)
             self.assert_single_due_date(due_dates, c.start_date)
-
-    # TODO
+    
     def test_gen_quarterly_due_date_with_1_day_range_for_feb(self):
-        pass
+        c = Cashflow(start_date=datetime(2014, 2, 28))
+        due_dates = c.get_due_dates(datetime(2012, 2, 29), QUARTERLY)
+        self.assert_single_due_date(due_dates, c.start_date)
+
+        c = Cashflow(start_date=datetime(2014, 2, 28))
+        due_dates = c.get_due_dates(datetime(2013, 11, 30), QUARTERLY)
+        self.assert_single_due_date(due_dates, c.start_date)
+
 
 if __name__ == '__main__':
     unittest.main()
