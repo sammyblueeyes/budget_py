@@ -152,9 +152,16 @@ class BudgetTest(unittest.TestCase):
             self.assertEqual(len(due_dates), 1)
             self.assertEqual(due_dates[0], c.start_date)
 
-    # TODO check first of month 
-    # TODO check other date of month 
+    def test_gen_monthly_due_date_with_1_day_range_at_start_of_month(self):
+        # check first of month 
+        c = Cashflow(start_date=datetime(2014, 1, 1))
+        due_dates = c.get_due_dates(datetime(2012,12,1), MONTHLY)
+        self.assertEqual(len(due_dates), 1)
+        self.assertEqual(due_dates[0], c.start_date)
 
+
+    # TODO check other date of month 
+    # TODO test YEARLY with 29 Feb in leap year as the due date
 
 
 if __name__ == '__main__':
