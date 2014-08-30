@@ -9,16 +9,20 @@ from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY, MINUTE
 
 class Cashflow:
 
-    def __init__(self, start_position=0.0, number_of_days=0):
+    def __init__(self, start_position=0.0, number_of_days=1):
+        # TODO: zero number of days is invalid
         self.start_position = start_position
         self.number_of_days = number_of_days
+        d = date.today()
+        self.start_date = datetime(d.year, d.month, d.day)
+        self.end_date = self.start_date + timedelta(number_of_days-1)
 
     def calculate(self, start_position, number_of_days, start_date=None, income=None, expenses=None):
         return [start_position for x in range(number_of_days)]
     
-    def get_due_dates(self, start_date, end_date, due_date, period):
+    def get_due_dates(self, due_date, period):
         r = rrule(period, dtstart=due_date)
-        return r.between(start_date, end_date, inc=True)
+        return r.between(self.start_date, self.end_date, inc=True)
 
     def load_csv(self, filename):
         """Load data csv file from filename. Return pointer to data object."""
@@ -80,21 +84,20 @@ class BudgetTest(unittest.TestCase):
                 self.assertEqual(day, start_position)
 
     def test_gen_weekly_due_date_with_1_day_range(self):
-        period = WEEKLY
-        d = date.today()
-        start_date = datetime(d.year, d.month, d.day)
-        end_date = start_date
-        for i in range(-21, 20):
-            due_date = start_date + timedelta(i)
-            due_dates = Cashflow().get_due_dates(start_date, end_date, due_date, period)
-            #print "     %d) " % i + str(due_dates)
+        for i in range(-1000, 20):
+            c = Cashflow()
+            due_date = c.start_date + timedelta(i)
+            due_dates = c.get_due_dates(due_date, WEEKLY)
+            # If the due date is in the future, It can't be in the
+            # generated range.
             if i > 0:
                 self.assertEqual(len(due_dates), 0)
             elif (i % 7) == 0:
                 self.assertEqual(len(due_dates), 1)
-                self.assertEqual(due_dates[0], start_date)
+                self.assertEqual(due_dates[0], c.start_date)
             else:
                 self.assertEqual(len(due_dates), 0)
+            #print "     %d) " % i + str(due_dates)
 
 
 if __name__ == '__main__':
