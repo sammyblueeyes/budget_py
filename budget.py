@@ -4,8 +4,9 @@ from datetime import datetime, date, timedelta
 from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY
 
 
-(QUARTERLY,
- HALFYEARLY) = range(10,12)
+(FORTNIGHTLY,
+ QUARTERLY,
+ HALFYEARLY) = range(10,13)
 
 
 # TODO Add a method to tally up income and expenses for each day of the specified period
@@ -35,6 +36,8 @@ class Cashflow:
             r = rrule(MONTHLY, dtstart=due_date, bymonthday=(due_date.day, -1), bysetpos=1, interval=3)
         elif period == MONTHLY:
             r = rrule(period, dtstart=due_date, bymonthday=(due_date.day, -1), bysetpos=1)
+        elif period == FORTNIGHTLY:
+            r = rrule(WEEKLY, dtstart=due_date, interval=2)
         else:
             r = rrule(period, dtstart=due_date)
         return r.between(self.start_date, self.end_date, inc=True)
@@ -104,7 +107,7 @@ class BudgetTest(unittest.TestCase):
         self.assertEqual(due_dates[0], start_date)
 
     def test_gen_weekly_due_date_with_1_day_range(self):
-        for i in range(-1000, 20):
+        for i in range(-500, 20):
             c = Cashflow()
             due_date = c.start_date + timedelta(i)
             due_dates = c.get_due_dates(due_date, WEEKLY)
@@ -117,6 +120,20 @@ class BudgetTest(unittest.TestCase):
             else:
                 self.assertEqual(len(due_dates), 0)
             #print "     %d) " % i + str(due_dates)
+
+    def test_gen_fortnighhtly_due_date_with_1_day_range(self):
+        for i in range(-500, 20):
+            c = Cashflow()
+            due_date = c.start_date + timedelta(i)
+            due_dates = c.get_due_dates(due_date, FORTNIGHTLY)
+            # If the due date is in the future, It can't be in the
+            # generated range.
+            if i > 0:
+                self.assertEqual(len(due_dates), 0)
+            elif (i % 14) == 0:
+                self.assert_single_due_date(due_dates, c.start_date)
+            else:
+                self.assertEqual(len(due_dates), 0)
 
     def test_gen_monthly_due_date_with_1_day_range_at_end_of_feb(self):
         def check_date(due_date):
