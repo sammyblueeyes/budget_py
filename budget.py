@@ -4,6 +4,10 @@ from datetime import datetime, date, timedelta
 from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY
 
 
+(QUARTERLY,
+ HALFYEARLY) = range(10,12)
+
+
 # TODO Add a method to tally up income and expenses for each day of the specified period
 # TODO Add an input for user arguments (income file, expenses file, number of days to graph)
 
@@ -27,6 +31,8 @@ class Cashflow:
     def get_due_dates(self, due_date, period):
         if period == YEARLY:
             r = rrule(period, dtstart=due_date, bymonth=due_date.month, bymonthday=(due_date.day, -1), bysetpos=1)
+        elif period == QUARTERLY:
+            r = rrule(MONTHLY, dtstart=due_date, bymonthday=(due_date.day, -1), bysetpos=1, interval=3)
         elif period == MONTHLY:
             r = rrule(period, dtstart=due_date, bymonthday=(due_date.day, -1), bysetpos=1)
         else:
@@ -192,6 +198,17 @@ class BudgetTest(unittest.TestCase):
             due_dates = c.get_due_dates(datetime(2013,c.start_date.month,c.start_date.day), YEARLY)
             self.assertEqual(len(due_dates), 1)
             self.assertEqual(due_dates[0], c.start_date)
+
+    def test_gen_quarterly_due_date_with_1_day_range(self):
+        for i in range(12):
+            c = Cashflow(start_date=datetime(2014, ((i+3) % 12)+1, 15))
+            due_dates = c.get_due_dates(datetime(2013,i+1,15), QUARTERLY)
+            self.assertEqual(len(due_dates), 1)
+            self.assertEqual(due_dates[0], c.start_date)
+
+    # TODO
+    def test_gen_quarterly_due_date_with_1_day_range_for_feb(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()
