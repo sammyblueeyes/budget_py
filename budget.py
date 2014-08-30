@@ -1,7 +1,7 @@
 import unittest 
 
 from datetime import datetime, date, timedelta
-from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY, MINUTELY, SECONDLY
+from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY
 
 
 # TODO Add a method to tally up income and expenses for each day of the specified period
@@ -25,7 +25,9 @@ class Cashflow:
         return [start_position for x in range(number_of_days)]
     
     def get_due_dates(self, due_date, period):
-        if period == MONTHLY:
+        if period == YEARLY:
+            r = rrule(period, dtstart=due_date, bymonth=due_date.month, bymonthday=(due_date.day, -1), bysetpos=1)
+        elif period == MONTHLY:
             r = rrule(period, dtstart=due_date, bymonthday=(due_date.day, -1), bysetpos=1)
         else:
             r = rrule(period, dtstart=due_date)
@@ -167,8 +169,29 @@ class BudgetTest(unittest.TestCase):
         self.assertEqual(len(due_dates), 1)
         self.assertEqual(due_dates[0], c.start_date)
 
-    # TODO test YEARLY with 29 Feb in leap year as the due date
+    def test_gen_yearly_due_date_with_1_day_range_for_leap_year(self):
+        # Test YEARLY with 29 Feb in leap year as the due date
+        c = Cashflow(start_date=datetime(2014, 2, 28))
+        due_dates = c.get_due_dates(datetime(2012,02,29), YEARLY)
+        self.assertEqual(len(due_dates), 1)
+        self.assertEqual(due_dates[0], c.start_date)
 
+        c = Cashflow(start_date=datetime(2016, 2, 28))
+        due_dates = c.get_due_dates(datetime(2012,02,29), YEARLY)
+        self.assertEqual(len(due_dates), 0)
+
+        c = Cashflow(start_date=datetime(2016, 2, 29))
+        due_dates = c.get_due_dates(datetime(2012,02,29), YEARLY)
+        self.assertEqual(len(due_dates), 1)
+        self.assertEqual(due_dates[0], c.start_date)
+
+    def test_gen_yearly_due_date_with_1_day_range_for_non_leap_years(self):
+        for i in range(365):
+            c = Cashflow(start_date=datetime(2014, 1, 1))
+            due_date = c.start_date + timedelta(i)
+            due_dates = c.get_due_dates(datetime(2013,c.start_date.month,c.start_date.day), YEARLY)
+            self.assertEqual(len(due_dates), 1)
+            self.assertEqual(due_dates[0], c.start_date)
 
 if __name__ == '__main__':
     unittest.main()
