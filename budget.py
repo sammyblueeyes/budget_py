@@ -25,7 +25,10 @@ class Cashflow:
         return [start_position for x in range(number_of_days)]
     
     def get_due_dates(self, due_date, period):
-        r = rrule(period, dtstart=due_date)
+        if period == MONTHLY:
+            r = rrule(period, dtstart=due_date, bymonthday=(due_date.day, -1), bysetpos=1)
+        else:
+            r = rrule(period, dtstart=due_date)
         return r.between(self.start_date, self.end_date, inc=True)
 
     def load_csv(self, filename):
@@ -102,6 +105,44 @@ class BudgetTest(unittest.TestCase):
             else:
                 self.assertEqual(len(due_dates), 0)
             #print "     %d) " % i + str(due_dates)
+
+    def test_gen_monthly_due_date_with_1_day_range_at_end_of_feb(self):
+        def check_date(due_date):
+            due_dates = c.get_due_dates(due_date, MONTHLY)
+            self.assertEqual(len(due_dates), 1)
+            self.assertEqual(due_dates[0], start_date)
+
+        # Due date on last day of February
+        end_of_feb = datetime(2014, 2, 28)
+        start_date = datetime(2014, 3, 28)
+        c = Cashflow(start_date=start_date)
+
+        check_date(end_of_feb)
+
+        # Cashflow date on last day of February (non-leap year)
+        start_date = end_of_feb
+        c = Cashflow(start_date=start_date)
+
+        check_date(datetime(2014, 1, 28))
+        check_date(datetime(2014, 1, 29))
+        check_date(datetime(2014, 1, 30))
+        check_date(datetime(2014, 1, 31))
+
+        # Cashflow date on last day of February (leap year)
+        end_of_feb = datetime(2012, 2, 29)
+        start_date = end_of_feb
+        c = Cashflow(start_date=start_date)
+
+        check_date(datetime(2012, 1, 29))
+        check_date(datetime(2012, 1, 30))
+        check_date(datetime(2012, 1, 31))
+
+
+    # TODO check behaviour of 30/31 end of month
+    # TODO check first of month 
+    # TODO check other date of month 
+
+
 
 
 if __name__ == '__main__':
