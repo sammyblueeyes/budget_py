@@ -1,4 +1,5 @@
 import unittest 
+import csv
 
 from datetime import datetime, date, timedelta
 from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY
@@ -46,20 +47,18 @@ class Cashflow:
 
     def load_csv(self, filename):
         """Load data csv file from filename. Return pointer to data object."""
-        infile = open(filename, "r")
         data = []
-        line_number = 1;
-        for line in infile:
-            fields = line.rstrip().split(",")
-            # Name:string,type:int,amount:double,first_date:date
-            if len(fields) != 4:
-                raise ValueError("Invalid input from file %s @ "
-                        "line %d" % (filename, line_number))
-            # TODO: Validate field types
-            line_number = line_number+1
-            data.append(fields)
-        
-        infile.close()
+        with open(filename, 'rb') as csvfile:
+            r = csv.reader(csvfile)
+            row_number = 1;
+            for row in r:
+                # Name:string,type:int,amount:double,first_date:date
+                if len(row) != 4:
+                    raise ValueError("Invalid input from file %s @ "
+                            "row %d" % (filename, row_number))
+                # TODO: Validate field types
+                row_number = row_number+1
+                data.append(row)
         return data
 
     def load_expenses(self, filename):
