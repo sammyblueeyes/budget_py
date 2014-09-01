@@ -48,8 +48,17 @@ class Cashflow:
         """Load data csv file from filename. Return pointer to data object."""
         infile = open(filename, "r")
         data = []
+        line_number = 1;
         for line in infile:
-            data.append(line.rstrip().split(","))
+            fields = line.rstrip().split(",")
+            # Name:string,type:int,amount:double,first_date:date
+            if len(fields) != 4:
+                raise ValueError("Invalid input from file %s @ "
+                        "line %d" % (filename, line_number))
+            # TODO: Validate field types
+            line_number = line_number+1
+            data.append(fields)
+        
         infile.close()
         return data
 
@@ -65,6 +74,8 @@ class BudgetTest(unittest.TestCase):
 
     def setUp(self):
         self.last_days = (31,28,31,30,31,30,31,31,30,31,30,31)
+
+    def write_test_expenses_file(self):
         """Setup unit tests by creating CSV files for income and expenses"""
         ofile = open("expenses.csv", "w")
         ofile.write('''"Mortgage",WEEKLY,500.00,30/12/2009
@@ -80,6 +91,7 @@ class BudgetTest(unittest.TestCase):
 ''')
         ofile.close()
 
+    def write_test_income_file(self):
         ofile = open("income.csv", "w")
         ofile.write('"Rosie\'s salary",MONTHLY,3944.20,02/05/2013\n')
         ofile.write('"Jeanette\' salary",FORTNIGHTLY,2899.20,23/08/2013\n')
@@ -87,14 +99,26 @@ class BudgetTest(unittest.TestCase):
 
 
     def test_load_expenses_csv_file(self):
+        self.write_test_expenses_file()
         expenses = Cashflow().load_expenses("expenses.csv")
         self.assertIsNotNone(expenses)
         self.assertEqual(10, len(expenses))
 
     def test_load_income_csv_file(self):
+        self.write_test_income_file()
         income = Cashflow().load_income("income.csv")
         self.assertIsNotNone(income)
         self.assertEqual(2, len(income))
+
+    def test_load_csv_file_with_incorrect_number_of_items_per_line(self):
+        ofile = open("broken.csv", "w")
+        ofile.write('abc,1\n')
+        ofile.close()
+        self.assertRaises(ValueError, Cashflow().load_csv, 
+                "broken.csv")
+
+    # TODO: Test checking of types of CSV fields
+    # TODO: Parse CSV with commma in the description
 
     def test_range_with_no_income_or_expenses(self):
         start_position = 1000.0
@@ -124,7 +148,7 @@ class BudgetTest(unittest.TestCase):
                 self.assertEqual(len(due_dates), 0)
             #print "     %d) " % i + str(due_dates)
 
-    def test_gen_fortnighhtly_due_date_with_1_day_range(self):
+    def test_gen_fortnightly_due_date_with_1_day_range(self):
         for i in range(-500, 20):
             c = Cashflow()
             due_date = c.start_date + timedelta(i)
