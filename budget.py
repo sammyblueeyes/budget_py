@@ -64,15 +64,22 @@ class Cashflow:
                 except:
                     row_error = True
                 if row_error or (not isinstance(row[1], int)):
-                    raise TypeError("Invalid type for field 1 in file %s @ "
+                    raise TypeError("Invalid type for 'period' in file %s @ "
                             "row %d" % (filename, row_number))
                 # amount:double
                 try:
                     row[2] = float(row[2])
                 except:
-                    raise TypeError("Invalid type for field 2 in file %s @ "
+                    raise TypeError("Invalid type for 'amount' in file %s @ "
                             "row %d" % (filename, row_number))
-                # first_date:date
+                # due_date:datetime
+                due_date = None
+                try:
+                    due_date = datetime.strptime(row[3], "%d/%m/%Y")
+                except:
+                    raise TypeError("Invalid type for 'due date' in file %s @ "
+                            "row %d" % (filename, row_number))
+                row[3] = due_date
                 row_number = row_number+1
                 data.append(row)
         return data
@@ -112,7 +119,6 @@ class BudgetTest(unittest.TestCase):
         ofile.write('"Jeanette\' salary",FORTNIGHTLY,2899.20,23/08/2013\n')
         ofile.close()
 
-
     def test_load_expenses_csv_file(self):
         self.write_test_expenses_file()
         expenses = Cashflow().load_expenses("expenses.csv")
@@ -146,8 +152,10 @@ class BudgetTest(unittest.TestCase):
         ofile.close()
         self.assertEqual(1, len(Cashflow().load_csv("broken.csv")))
 
+    def test_load_csv_file_with_incorrect_value_for_date_field(self):
+        self.run_csv_row_test('"Rosie\'s salary",MONTHLY,2220.0,september\n', TypeError)
+        self.run_csv_row_test('"Rosie\'s salary",MONTHLY,2220.0,2012/02/11\n', TypeError)
 
-    # TODO: Test checking of types of CSV fields
     # TODO: Parse CSV with commma in the description
 
     def test_range_with_no_income_or_expenses(self):
