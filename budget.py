@@ -125,33 +125,22 @@ class BudgetTest(unittest.TestCase):
         self.assertIsNotNone(income)
         self.assertEqual(2, len(income))
 
-    def test_load_csv_file_with_incorrect_number_of_items_per_line(self):
+    def run_csv_row_test(self, line, error):
         ofile = open("broken.csv", "w")
-        ofile.write('abc,1\n')
+        ofile.write(line)
         ofile.close()
-        self.assertRaises(ValueError, Cashflow().load_csv, 
-                "broken.csv")
+        self.assertRaises(error, Cashflow().load_csv, "broken.csv")
+
+    def test_load_csv_file_with_incorrect_number_of_items_per_line(self):
+        self.run_csv_row_test('abc,1\n', ValueError)
 
     def test_load_csv_file_with_incorrect_value_for_period_field(self):
-        ofile = open("broken.csv", "w")
-        ofile.write('"Rosie\'s salary",XXX,3944.20,02/05/2013\n')
-        ofile.close()
-        self.assertRaises(TypeError, Cashflow().load_csv, "broken.csv")
-        ofile = open("broken.csv", "w")
-        ofile.write('"Rosie\'s salary","bla",3944.20,02/05/2013\n')
-        ofile.close()
-        self.assertRaises(TypeError, Cashflow().load_csv, "broken.csv")
-        ofile = open("broken.csv", "w")
-        ofile.write('"Rosie\'s salary",2.2,3944.20,02/05/2013\n')
-        ofile.close()
-        self.assertRaises(TypeError, Cashflow().load_csv, "broken.csv")
-
+        self.run_csv_row_test('"Rosie\'s salary",XXX,3944.20,02/05/2013\n', TypeError)
+        self.run_csv_row_test('"Rosie\'s salary","bla",3944.20,02/05/2013\n', TypeError)
+        self.run_csv_row_test('"Rosie\'s salary",2.2,3944.20,02/05/2013\n', TypeError)
 
     def test_load_csv_file_with_incorrect_value_for_amount_field(self):
-        ofile = open("broken.csv", "w")
-        ofile.write('"Rosie\'s salary",MONTHLY,two hundred,02/05/2013\n')
-        ofile.close()
-        self.assertRaises(TypeError, Cashflow().load_csv, "broken.csv")
+        self.run_csv_row_test('"Rosie\'s salary",MONTHLY,two hundred,02/05/2013\n', TypeError)
         ofile = open("broken.csv", "w")
         ofile.write('"Rosie\'s salary",MONTHLY,300,02/05/2013\n')
         ofile.close()
