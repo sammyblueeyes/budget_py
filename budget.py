@@ -57,6 +57,17 @@ class Cashflow:
                     raise ValueError("Invalid input from file %s @ "
                             "row %d" % (filename, row_number))
                 # TODO: Validate field types
+                # period:int
+                row_error = False
+                try:
+                    row[1] = eval(row[1])
+                except:
+                    row_error = True
+                if row_error or (not isinstance(row[1], int)):
+                    raise TypeError("Invalid type for field 1 in file %s @ "
+                            "row %d" % (filename, row_number))
+                # amount:double
+                # first_date:date
                 row_number = row_number+1
                 data.append(row)
         return data
@@ -84,8 +95,8 @@ class BudgetTest(unittest.TestCase):
 "Food",WEEKLY,130.00,02/01/2010
 "Car petrol",WEEKLY,60.00,07/12/2009
 "Electricity",MONTHLY,300.00,10/12/2009
-"Health Insurance",MONTLY,205.00,16/11/2009
-"Phone bill",MONTLY,40.00,27/11/2009
+"Health Insurance",MONTHLY,205.00,16/11/2009
+"Phone bill",MONTHLY,40.00,27/11/2009
 "Entertainment",WEEKLY,300.00,04/12/2009
 ''')
         ofile.close()
@@ -116,7 +127,23 @@ class BudgetTest(unittest.TestCase):
         self.assertRaises(ValueError, Cashflow().load_csv, 
                 "broken.csv")
 
+    def test_load_csv_file_with_incorrect_value_for_period_field(self):
+        ofile = open("broken.csv", "w")
+        ofile.write('"Rosie\'s salary",XXX,3944.20,02/05/2013\n')
+        ofile.close()
+        self.assertRaises(TypeError, Cashflow().load_csv, "broken.csv")
+        ofile = open("broken.csv", "w")
+        ofile.write('"Rosie\'s salary","bla",3944.20,02/05/2013\n')
+        ofile.close()
+        self.assertRaises(TypeError, Cashflow().load_csv, "broken.csv")
+        ofile = open("broken.csv", "w")
+        ofile.write('"Rosie\'s salary",2.2,3944.20,02/05/2013\n')
+        ofile.close()
+        self.assertRaises(TypeError, Cashflow().load_csv, "broken.csv")
+
+
     # TODO: Test checking of types of CSV fields
+
     # TODO: Parse CSV with commma in the description
 
     def test_range_with_no_income_or_expenses(self):
